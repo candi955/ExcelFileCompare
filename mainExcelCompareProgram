@@ -1,0 +1,72 @@
+# This is an admin-only file; it is meant to show if there are any differences on eight different Excel reports
+# For each set of reports (before and after reports), this program is being utilized to determine if there is a
+# difference between two excel files, and output those files to a specific folder.
+# Two Input files are compared, and the changes Populate in an Output Excel file (it helps to check the Output file-
+# table filters for worksheets with large data)
+# to the general output folder
+# This program utilizes the modules Pandas, and XlsxWriter
+
+
+# References for python code:
+# https://python-forum.io/thread-35209.html
+# https://xlsxwriter.readthedocs.io/example_pandas_table.html
+# https://stackoverflow.com/questions/55669857/pandas-resize-excel-sheet-to-match-larger-one-for-comparison
+
+import pandas as pd
+import xlsxwriter
+import numpy
+
+
+##--Report Comparison Program (2 files with similar shape) - sent to general output folder--##
+
+# Pulling in the dataframes of the reports downloaded from Workfront
+# This is where you place the path to the 2 files being compared
+
+# Place the smaller file path here (tuple shape is (m,n); m is # rows, n is number columns)
+oldFile=pd.read_excel(r'C:\Users\________\Downloads\_________________________________')
+print(oldFile.shape)
+
+# Place the smaller file path here
+newFile=pd.read_excel(r'C:\Users\_______\Downloads\________________')
+print(newFile.shape)
+oldFile,newFile =oldFile.align(newFile,axis=None)
+
+
+# Creating a variable that shows the differences between the two dataframes (anything unchanged shows as 'NaN')
+oldNewFileDifference=oldFile[oldFile!=newFile]
+
+# Setting up the display to ensure as much information as possible is displayed when printing through pandas
+#pd.options.display.width= None
+#pd.options.display.max_columns= None
+#pd.set_option('display.max_rows', 3000)
+#pd.set_option('display.max_columns', 3000)
+
+# Printing, but can choose not to utilize this option if planning to work from the file opening in Excel
+#print(oldNewFileDifference)
+
+## Create a Pandas Excel writer using XlsxWriter as the engine.
+writer = pd.ExcelWriter(C:\Users\_______\___________\________________', engine='xlsxwriter')
+
+# Write the dataframe data to XlsxWriter. Turn off the default header and index and skip one row to allow us to insert
+# a user defined header.
+oldNewFileDifference.to_excel(writer,sheet_name='OldNewFileDiff', startrow=1,header=False, index=False)
+
+# Get the xlsxwriter workbook and worksheet objects.
+#workbook=writer.book
+worksheet=writer.sheets['OldNewFileDiff']
+
+# Get the dimensions of the dataframe.
+(max_row, max_col) = oldNewFileDifference.shape
+
+# Create a list of column headers, to use in add_table().
+column_settings = [{'header':column} for column in oldNewFileDifference.columns]
+
+# Add the Excel table structure. Pandas will add the data.
+worksheet.add_table(0, 0, max_row, max_col -1, {'columns':column_settings})
+
+# Make the columns wider for clarity. Can choose not to utilize this option if do not want wide columns
+# worksheet.set_column(0,max_col-1,100)
+
+# Close the Pandas Excel writer and output the Excel file.
+writer.close()
+
